@@ -75,6 +75,7 @@ See 'Features' section below to see what these options do
     - LessLag: This applies optimizations to cut 3 frames of native input delay.
     - LLUltra: This applies optimizations to cut 4 frames of native input delay.
       - This also works on console, but the game resolution will be scaled down to keep it stutter free.
+      - On console, you may notice that certain UI elements look glitcy, such as the fighter cut-in screen, and match start countdown ui.
     - LLDoubles (Recommended for doubles): This applies optimizations to cut 2 frames of native input delay. This should work even in doubles when there are alot of players on screen without stuttering.
 
 Recommended for console:
