@@ -48,26 +48,31 @@ See 'Features' section below to see what these options do
 
 See 'Features' section below to see what these options do
 
-
 ## ✨ Features
 
 ### 🌐 Online Enhancements
 
 - Display **opponent ping** in all online modes (including Elite Smash):
   - Network RTT (ping) / connection quality
+  - Green=Stable, Yellow=Inconsistent, Red=Unstable
 - Show **extended opponent info** *(only if both players have the mod)*:
-  - Opponent’s current network/render settings (latency slider, buffer mode, vsync status, etc.)
+  - Opponent’s current network/render settings (latency slider, render profile)
 
 ### 🎛️ Online Latency Controls
-*(Available in Arena and Local Online modes only)*
+*(Available in Online Arena and Local Online modes only)*
 
+- This allows you to control the online latency delay frames.
 - Adjust:
-  - Latency value: Applied when entering a valid online match
+  - Latency value:
+    - Auto: Applies SSBU's default latency calculation method.
+    - 0f-25f: Manually set the latency delay frames
 
-### 🎛️ Render Profile Controls (for less input latency)
-*(Available in Offline, Online Arena and Local Online modes only)*
+> It is recommended to manually set the latency delay frames based on the ping and connection quality.
 
-**I would highly recommend you to leave these options as is. The best settings are already applied automatically when entering/exiting a valid online match. These are for those who want to experiment and try out different settings**
+### 🎛️ Render Profile Controls
+*(Available in Online Arena and Local Online modes only)*
+
+- This allows you to set the games render/graphic settings for less native input delay.
 - Adjust:
   - Render Profile:
     - Auto: Applies the recommended profile based on platform (console/emulator) and number of players.
@@ -75,19 +80,21 @@ See 'Features' section below to see what these options do
     - LessLag: This applies optimizations to cut 3 frames of native input delay.
     - LLUltra: This applies optimizations to cut 4 frames of native input delay.
       - This also works on console, but the game resolution will be scaled down to keep it stutter free.
-      - On console, you may notice that certain UI elements look glitcy, such as the fighter cut-in screen, and match start countdown ui.
+      - On console, you may notice that certain UI elements look glitchy, such as the fighter cut-in screen, and match start countdown ui.
     - LLDoubles (Recommended for doubles): This applies optimizations to cut 2 frames of native input delay. This should work even in doubles when there are alot of players on screen without stuttering.
 
-Recommended for console:
-  - LessLag or LessLagUltra (depending on preference)
+**If you arent sure what profile to use, just leave it on Auto**
 
-Recommended for emulator:
+Best profile for console:
+  - LessLag or LLUltra (depending on preference)
+
+Best profile for emulator:
   - LLUltra
 
-Recommended for doubles:
+Best profile for doubles:
   - LLDoubles
 
-> Applies **selected render settings automatically** when entering a valid online match.  
+> Applies **selected render profile automatically** when entering a valid online match.  
 > Reverts to **vanilla settings** after exiting  
 
 ## 📝 Notes and Contribution
