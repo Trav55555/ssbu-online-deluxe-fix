@@ -24,4 +24,4 @@ Notable dependencies to verify before release:
 
 Do not commit Nintendo game dumps, update/DLC packages, keys, saves, or proprietary game assets.
 
-The previous bundled Fontworks/Nintendo font asset was removed from this fork. Use runtime/default fonts or a clearly licensed replacement if a custom font is needed later.
+`assets/fonts/default_font.otf` identifies itself as `nintendoP_RodinNTLG-B003` with Fontworks copyright metadata. Verify redistribution rights before publishing source or binary packages that include or embed it.

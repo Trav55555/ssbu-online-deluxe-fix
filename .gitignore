@@ -20,6 +20,7 @@ ryujinx_build.ps1
 *.zip
 
 # Local Skyline/package build outputs.
+/dist/
 *.nro
 *.nso
 

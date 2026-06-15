@@ -133,7 +133,7 @@ Contributions are welcome, especially for moves that still cause stutter. Start 
 
 This fork follows the repository license: AGPL-3.0. If you distribute builds, include the license and provide the corresponding source for the build.
 
-Do not include game files, keys, saves, or other copyrighted Nintendo assets in this repository or in release packages.
+Do not include game files, update/DLC packages, keys, or saves in release packages.
 
 ## Credits
 
