@@ -1,6 +1,7 @@
 #![allow(static_mut_refs)]
 
 mod input_poll;
+mod logging;
 mod net;
 mod perf_scaler;
 mod render;
@@ -9,7 +10,10 @@ mod utils;
 
 fn setup_panic_hook() {
     std::panic::set_hook(Box::new(|info| {
-        let location = info.location().unwrap();
+        let location = info
+            .location()
+            .map(|location| location.to_string())
+            .unwrap_or_else(|| String::from("unknown location"));
 
         let msg = match info.payload().downcast_ref::<&'static str>() {
             Some(s) => *s,
@@ -31,9 +35,21 @@ fn setup_panic_hook() {
 #[skyline::main(name = "ssbu-online-deluxe")]
 pub fn main() {
     setup_panic_hook();
+    let _ = logging::init(log::LevelFilter::Info);
+    logging::info!("ssbu-online-deluxe initialized");
+    logging::info!(
+        "TEXT REGION BASE: {:#x} emulator={}",
+        utils::text_region_base(),
+        utils::is_emulator()
+    );
 
     render::install();
     net::install();
     ui::install();
-    perf_scaler::install();
+
+    if utils::is_emulator() {
+        logging::info!("PERF SCALER SKIP: emulator detected");
+    } else {
+        perf_scaler::install();
+    }
 }

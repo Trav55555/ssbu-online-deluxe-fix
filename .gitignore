@@ -2,3 +2,32 @@
 Cargo.lock
 yuzu_build.ps1
 ryujinx_build.ps1
+
+# Local emulator/game dumps and installed content; never commit copyrighted game files.
+*.nsp
+*.xci
+*.nca
+*.ncz
+*.nsz
+*.xcz
+*.tik
+*.cert
+*.cnmt.xml
+
+# Local archives often used for game/update dumps or release/package outputs.
+*.7z
+*.rar
+*.zip
+
+# Local Skyline/package build outputs.
+*.nro
+*.nso
+
+# Python/tool cache files.
+__pycache__/
+*.py[cod]
+
+# Local validation notes and agent/model navigation harnesses; keep out of shared repo.
+/tools/
+/docs/mod-update-validation.md
+/docs/readme-claim-validation.md

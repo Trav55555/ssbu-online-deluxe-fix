@@ -98,6 +98,7 @@ fn on_station_connection_changed(
     let id = station.get_id();
     let mut stations_table = CONNECTED_STATION_TABLE_SYNCED_INTERNAL.lock().unwrap();
     if event == ConnectionChangedEvent::StationConnected {
+        stations_table.retain(|station| station.id != id);
         stations_table.push(StationNetInfo {
             id,
             is_valid_comms: AtomicBool::new(false),
@@ -118,6 +119,10 @@ fn on_station_connection_changed(
 }
 
 fn send_pia_data_hook(_station: ConnectedStation, data: &mut [u8]) {
+    if data.len() < core::mem::size_of::<PiaCustomNetPacket>() {
+        return;
+    }
+
     let latency_bits = LATENCY_SLIDER_MANAGER
         .active_latency()
         .unwrap_or(LATENCY_SLIDER_MANAGER.selected_latency())
@@ -136,6 +141,10 @@ fn send_pia_data_hook(_station: ConnectedStation, data: &mut [u8]) {
 }
 
 fn receive_pia_data_hook(station: ConnectedStation, data: &[u8]) {
+    if data.len() < core::mem::size_of::<PiaCustomNetPacket>() {
+        return;
+    }
+
     let id = station.get_id();
     let stations_table = CONNECTED_STATION_TABLE_ATOMIC_VIEW.load();
     if let Some(station) = stations_table.iter().find(|s| s.id == id) {

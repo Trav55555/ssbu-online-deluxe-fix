@@ -1,8 +1,8 @@
 use crate::{
     input_poll::{InputSnapshot, PollerContext, POLLER},
     net::{
-        is_in_valid_online_game, is_valid_online_mode, latency_slider::LATENCY_SLIDER_MANAGER,
-        pia::StationExt,
+        is_connected, is_in_valid_online_game, is_valid_online_mode,
+        latency_slider::LATENCY_SLIDER_MANAGER, online_mode_name, pia::StationExt,
     },
     render::profile::RENDER_PROFILE_MANAGER,
     utils::is_emulator,
@@ -15,7 +15,6 @@ use ultelier::sync_guest::{self, BufferMode, IndexMode, ResolutionLevel};
 
 static OVERLAY_UI_POLLER_CONTEXT: PollerContext =
     PollerContext::new(std::time::Duration::from_millis(167));
-static DEFAULT_FONT_BYTES: &[u8] = include_bytes!("../../../assets/fonts/default_font.otf");
 static IMGUI_EMPTY_CELL_STR: &str = "---\0";
 static IMGUI_INTERACT_TABLE_ROW_NAME_STRS: [&str; 4] =
     ["Name\0", "Ping\0", "NetLatency\0", "NetProfile\0"];
@@ -53,27 +52,6 @@ extern "C" {}
 
 unsafe extern "C" fn setup_imgui_context(imgui_ctx: *mut u64) {
     igSetCurrentContext(imgui_ctx as _);
-}
-
-unsafe extern "C" fn imgui_init() {
-    println!("Initializing Imgui...");
-
-    let io = igGetIO();
-    let fonts = (*io).Fonts;
-
-    //let range_builder = ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder();
-    //ImFontGlyphRangesBuilder_AddRanges(range_builder, ImFontAtlas_GetGlyphRangesDefault(fonts));
-    //let glyph_ranges = ImVector_ImWchar_create();
-    //ImFontGlyphRangesBuilder_BuildRanges(range_builder, glyph_ranges);
-    DEFAULT_FONT = ImFontAtlas_AddFontFromMemoryTTF(
-        fonts,
-        DEFAULT_FONT_BYTES.as_ptr() as *mut _,
-        DEFAULT_FONT_BYTES.len() as i32,
-        16.0,
-        std::ptr::null_mut(),
-        std::ptr::null_mut(),
-        //glyph_ranges as *const ImWchar,
-    );
 }
 
 fn ping_color_for_stability(stability: NetworkStability) -> ImVec4 {
@@ -490,6 +468,8 @@ unsafe fn draw_debug_table(first_col_width: f32) {
         false => String::from("Console"),
     };
     draw_row_str("Platform\0", Some(platform));
+    draw_row_str("OnlineMode\0", Some(online_mode_name().to_string()));
+    draw_row_str("Connected\0", Some(is_connected().to_string()));
 
     draw_row_str(
         "Active Profile\0",
@@ -681,6 +661,5 @@ pub fn is_window_interactable() -> bool {
 
 pub(super) fn install() {
     imgui_api::imgui_setup_context(setup_imgui_context);
-    //imgui_api::imgui_smash_add_on_pre_init(imgui_init as _);
     imgui_api::imgui_smash_add_on_draw_frame(draw as _);
 }

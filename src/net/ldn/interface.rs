@@ -90,11 +90,9 @@ pub fn try_get_network_info() -> std::io::Result<Box<NetworkInfo>> {
         let state = get_network_state();
         match state {
             NetworkState::AccessPointCreated | NetworkState::StationConnected => {
-                let mut network_info_buffer: [u8; 0x480] = [0; 0x480];
-                let network_info_buffer = network_info_buffer.as_mut_ptr() as *mut NetworkInfo;
-
-                get_network_info(network_info_buffer);
-                Ok(Box::from_raw(network_info_buffer))
+                let mut network_info = Box::new(std::mem::zeroed::<NetworkInfo>());
+                get_network_info(network_info.as_mut() as *mut NetworkInfo);
+                Ok(network_info)
             }
             _ => Err(std::io::Error::new(
                 std::io::ErrorKind::NotConnected,

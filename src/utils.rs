@@ -20,11 +20,20 @@ pub fn duration_since_tick(tick: Tick) -> Duration {
 }
 
 #[inline]
+pub fn text_region_base() -> u64 {
+    unsafe { skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64 }
+}
+
+#[inline]
 pub fn is_emulator() -> bool {
-    unsafe {
-        let base_address = skyline::hooks::getRegionAddress(skyline::hooks::Region::Text) as u64;
-        return base_address == 0x80004000 || base_address == 0x8504000;
-    }
+    let base_address = text_region_base();
+
+    // Real Switch processes use high 0x71... text mappings. Eden/Yuzu-style
+    // emulators map NSO text in low 32-bit-ish address space, and the exact
+    // base changes with game/update/loader state (for example SSBU 13.0.3 in
+    // Eden maps at 0x80bde000). Use the address range instead of pinning one
+    // update-specific base.
+    base_address < 0x1_0000_0000
 }
 
 #[inline]

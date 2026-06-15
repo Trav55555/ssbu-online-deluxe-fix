@@ -7,9 +7,9 @@
 PLUGIN_NAME="ssbu_online_deluxe"
 EMU_PLUGIN_PATH="$HOME/.local/share/eden/sdmc/atmosphere/contents/01006A800016E000/romfs/skyline/plugins/lib$PLUGIN_NAME.nro"
 LOCAL_PLUGIN_PATH="./target/aarch64-skyline-switch/release/lib$PLUGIN_NAME.nro"
-EMU_EXE_PATH="$HOME/.local/share/emulators/eden/Eden-Linux-v0.2.0-rc1-amd64-gcc-standard.AppImage"
-SMASH_NSP_PATH="/mnt/ssd/Game Data/Switch Games/Super Smash Bros Ultimate[01006A800016E000][US][v0].nsp"
-CLEAN=1
+EMU_EXE_PATH="${EMU_EXE_PATH:-$HOME/.local/share/emulators/eden/Eden-Linux-v0.2.0-rc1-amd64-gcc-standard.AppImage}"
+SMASH_NSP_PATH="${SMASH_NSP_PATH:-$HOME/Games/Switch/Super Smash Brothers Ultimate [v0].nsp}"
+CLEAN="${CLEAN:-1}"
 
 # ==============================
 # Get local IPv4 address

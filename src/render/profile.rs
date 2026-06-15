@@ -186,11 +186,11 @@ impl RenderProfileManager {
     }
     pub fn selected_render_profile_settings(&self) -> RenderProfileSettings {
         RenderProfileSettings::from_bits(self.selected_profile_settings.load(Ordering::SeqCst))
-            .unwrap()
+            .unwrap_or_else(RenderProfileSettings::vanilla)
     }
     pub fn active_render_profile_settings(&self) -> RenderProfileSettings {
         RenderProfileSettings::from_bits(self.active_profile_settings.load(Ordering::SeqCst))
-            .unwrap()
+            .unwrap_or_else(RenderProfileSettings::vanilla)
     }
     pub fn selected_render_profile(&self) -> RenderProfile {
         RenderProfile::from_settings(&self.selected_render_profile_settings())
@@ -292,10 +292,16 @@ impl RenderProfileManager {
         false
     }
     pub fn auto_select_profile(&self, num_opponents: usize) {
+        self.auto_select_profile_inner(num_opponents, false);
+    }
+    pub fn auto_select_match_profile(&self, num_opponents: usize) {
+        self.auto_select_profile_inner(num_opponents, true);
+    }
+    fn auto_select_profile_inner(&self, num_opponents: usize, assume_singles_if_unknown: bool) {
         if !self.is_auto_mode() {
             return;
         }
-        if num_opponents == 0 {
+        if num_opponents == 0 && !assume_singles_if_unknown {
             self.select_render_profile_immediate(RenderProfile::Vanilla);
             return;
         }
@@ -330,11 +336,20 @@ unsafe fn main_loop_hook(_ctx: &InlineCtx) {
 }
 
 pub(crate) fn match_init() {
+    let num_connected_stations = StationConnectionManager::num_connected_stations();
+    RENDER_PROFILE_MANAGER.auto_select_match_profile(num_connected_stations);
     RENDER_PROFILE_MANAGER.apply_selected_profile_settings();
+    crate::logging::info!(
+        "RENDER PROFILE MATCH INIT: selected={} active={} stations={}",
+        RENDER_PROFILE_MANAGER.selected_render_profile(),
+        RENDER_PROFILE_MANAGER.active_render_profile(),
+        num_connected_stations
+    );
 }
 
 pub(crate) fn match_cleanup() {
     RENDER_PROFILE_MANAGER.apply_profile_settings_immediate(&RenderProfileSettings::vanilla());
+    crate::logging::info!("RENDER PROFILE MATCH CLEANUP: active=Vanilla");
 }
 
 pub(super) fn install() {

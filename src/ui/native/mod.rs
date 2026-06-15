@@ -30,6 +30,10 @@ fn poll_station_cycle(input_snapshot: &InputSnapshot) -> i8 {
 }
 
 pub unsafe fn update_css_ui(banner_pane1_ptr: *mut Pane) {
+    if banner_pane1_ptr.is_null() {
+        return;
+    }
+
     static mut CURR_STATION_INDEX: usize = 0;
     const CELL_WIDTH: usize = 15;
     if !crate::ui::overlay::is_window_interactable() {
@@ -103,18 +107,21 @@ pub unsafe fn update_css_ui(banner_pane1_ptr: *mut Pane) {
 
     let banner_display_str = format!("{}{}\0", local_line_str, station_line_str);
 
-    let banner_pane1_bg_ptr = (*banner_pane1_ptr)
+    let Some(banner_pane1_bg) = (*banner_pane1_ptr)
         .parent()
-        .unwrap()
-        .traverse_backward(2)
-        .unwrap() as *mut Pane;
-    (*banner_pane1_bg_ptr).set_visible(false);
+        .and_then(|pane| pane.traverse_backward(2))
+    else {
+        return;
+    };
+    banner_pane1_bg.set_visible(false);
 
-    let banner_pane2_ptr = (*banner_pane1_bg_ptr)
+    let Some(banner_pane2) = banner_pane1_bg
         .traverse_upward(2)
-        .unwrap()
-        .prev()
-        .unwrap() as *mut Pane;
+        .and_then(|pane| pane.prev())
+    else {
+        return;
+    };
+    let banner_pane2_ptr = banner_pane2 as *mut Pane;
     for pane_ptr in [banner_pane1_ptr, banner_pane2_ptr] {
         let pane = &mut *pane_ptr;
         let pane_tb = pane.as_textbox();
@@ -135,6 +142,10 @@ pub unsafe fn update_css_ui(banner_pane1_ptr: *mut Pane) {
 }
 
 pub unsafe fn update_local_online_ui(pane_handle: *mut Pane) {
+    if pane_handle.is_null() {
+        return;
+    }
+
     if !crate::ui::overlay::is_window_interactable() {
         let input_snapshot = POLLER.snapshot(&NATIVE_UI_POLLER_CONTEXT);
         LATENCY_SLIDER_MANAGER.poll(
@@ -150,6 +161,10 @@ pub unsafe fn update_local_online_ui(pane_handle: *mut Pane) {
 }
 
 pub unsafe fn update_online_arena_ui(pane_handle: *mut Pane, room_id: String) {
+    if pane_handle.is_null() {
+        return;
+    }
+
     if !crate::ui::overlay::is_window_interactable() {
         let input_snapshot = POLLER.snapshot(&NATIVE_UI_POLLER_CONTEXT);
         LATENCY_SLIDER_MANAGER.poll(

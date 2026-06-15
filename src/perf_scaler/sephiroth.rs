@@ -43,12 +43,10 @@ extern "C" fn sephiroth_fighter_frame(fighter: &mut L2CFighterCommon) {
         if fully_charged_shoot {
             if !GIGAFLARE_ACTIVE {
                 GIGAFLARE_ACTIVE = true;
-                println!("[SEPHIROTH_DRS] intensive_frame_start");
                 push_dynamic_res_report();
             }
         } else if GIGAFLARE_ACTIVE {
             GIGAFLARE_ACTIVE = false;
-            println!("[SEPHIROTH_DRS] intensive_frame_end");
             pop_dynamic_res_report();
         }
     }

@@ -159,7 +159,6 @@ pub static LATENCY_SLIDER_MANAGER: LatencySliderManager = LatencySliderManager::
 #[skyline::hook(offset = 0x16ccc58, inline)]
 unsafe fn set_online_latency(ctx: &InlineCtx) {
     if net::is_valid_online_mode() {
-        println!("SET ONLINE LATENCY");
         let auto = *(ctx.registers[19].x() as *mut u8);
         LAST_AUTO.store(auto as i8, Ordering::SeqCst);
         let buffer = LATENCY_SLIDER_MANAGER

@@ -1,128 +1,146 @@
 # SSBU Online Deluxe
 
-A performance and online enhancement mod for **Super Smash Bros. Ultimate** that introduces latency controls, render optimizations, and real-time online information.
+SSBU Online Deluxe is a work-in-progress mod for **Super Smash Bros. Ultimate**. It adds online latency controls, render-profile controls, and an optional overlay for connection and frame-time info.
 
-> ⚠️ This is a work in progress. Features and stability may change as development continues.  
-> ⚠️ Use at your own risk. I have been testing this mod online personally without any major issues, but there is still a non-zero risk of a ban. The overclocks are intentionally minimal; however, any hardware damage or account penalties remain your responsibility.  
+This is a fork of saad-script's original SSBU Online Deluxe work, with additional compatibility and validation changes.
 
-## ✅ Compatibility
+Use it at your own risk. I have tested it online without major issues, but there is always some risk when using mods online. The overclocks are intentionally conservative, but hardware damage, crashes, bans, or other account issues are still your responsibility.
 
-- ✔️ Nintendo Switch (console)
-- ✔️ Eden Emulator (requires workaround, see installation section below)
-- ⚠️ Other emulators: not yet tested (not planned)
-- ⚠️ HDR support not yet tested (planned)
+## Compatibility
 
-## 📦 Installation
+- Nintendo Switch hardware
+- Eden emulator for startup and LDN smoke testing
+- Other emulators are untested
+- HDR is untested
 
-- Remove any previous latency slider mod, vsync mod, and less lag mod:
-- Download and extract the zip from the releases, then:
-- Copy the `atmosphere` folder to the root of the SD card (or sdmc directory on emulator).
-- Your Switch may need a full restart for the mod to load correctly.
-- Eden emulator currently requires a workaround:
-  - Right click SSBU -> Click `Configure Game` -> Click `System` tab -> Check `RNG Seed` -> Set to `00000000`
+Eden does **not** support Nintendo's official Online services, so it cannot validate Quickplay or Elite Smash matchmaking. Use console hardware for that testing.
 
-> ⚠️ The latest skyline currently causes a crash. Use the skyline files bundled in with the release zip.  
-> ⚡ If you are using emulator, I recommend using [ssbu-emu-optimizer](https://github.com/saad-script/ssbu-emu-optimizer/releases). It will setup everything for you.
+## Installation
 
+1. Remove any old latency-slider, vsync, or less-lag mods.
+2. Download the release zip and extract it.
+3. Copy the `atmosphere` folder to the root of your SD card, or to the emulator `sdmc` directory.
+4. Fully restart the Switch or emulator.
 
-## 🎮 Controls
+### Eden notes
 
-### Native UI (Online Character Select Screen and Online Arena)
+Eden currently needs a little extra setup:
 
-- On the character select screen or online arena:
-  - `D-pad Left/Right`: Select network latency
-  - `D-pad Up/Down`: Select render profile
+- In Eden, right-click SSBU and open `Configure Game`.
+- Go to `System`.
+- Enable `RNG Seed` and set it to `00000000`.
+- Use a complete, known-good Skyline ExeFS set for SSBU: `exefs/subsdk9` and `exefs/main.npdm`.
+- Use SSBU update `13.0.3` or another update that matches the mod's hook offsets. Base `1.0.0` is not enough.
 
-- On the character select screen (more than one opponent):
-  - `ZL + ZR + Dpad Left/Right`: Cycle between which opponent's network info to show
+On Eden, the dynamic-resolution perf-scaler hooks are skipped. Those Smashline fighter-frame hooks froze Eden during testing. Latency controls, render-profile controls, the overlay, and online-mode hooks still load.
 
-See 'Features' section below to see what these options do
+Eden Local Wireless reaches Eden's LDN service path, but room and match validation are still unfinished.
 
-### Overlay UI (Optional)
+If you are setting up SSBU on emulator, [ssbu-emu-optimizer](https://github.com/saad-script/ssbu-emu-optimizer/releases) may save time.
 
-- `ZL + ZR + D-Pad Down` → Cycle between current window mode
-  - Window Modes: `Hidden`, `Full Info`, `Performance Info`
-  - In `Full Info Mode`:
-    - `D-Pad Up / Down` → Select option
-    - `D-Pad Left / Right` → Change value
+## Controls
 
-See 'Features' section below to see what these options do
+### Native online UI
 
-## ✨ Features
+On the online character-select screen or in an online arena:
 
-### 🌐 Online Enhancements
+- `D-pad Left / Right`: change network latency
+- `D-pad Up / Down`: change render profile
 
-- Display **opponent ping** in all online modes (including Elite Smash):
-  - Network RTT (ping) / connection quality
-  - Green=Stable, Yellow=Inconsistent, Red=Unstable
-- Show **extended opponent info** *(only if both players have the mod)*:
-  - Opponent’s current network/render settings (latency slider, render profile)
+On character select with more than one opponent:
 
-### 🎛️ Online Latency Controls
-*(Available in Online Arena and Local Online modes only)*
+- `ZL + ZR + D-pad Left / Right`: choose which opponent's network info is shown
 
-- This allows you to control the online latency delay frames.
-- Adjust:
-  - Latency value:
-    - Auto: Applies SSBU's default latency calculation method.
-    - 0f-25f: Manually set the latency delay frames
+### Overlay
 
-> It is recommended to manually set the latency delay frames based on the ping and connection quality.
+- `ZL + ZR + D-pad Down`: cycle the overlay
+- `L + R + D-pad Down`: alternate overlay shortcut
 
-### 🎛️ Render Profile Controls
-*(Available in Online Arena and Local Online modes only)*
+Overlay modes:
 
-- This allows you to set the games render/graphic settings for less native input delay.
-- Adjust:
-  - Render Profile:
-    - Auto: Applies the recommended profile based on platform (console/emulator) and number of players.
-    - Vanilla: This is the default vanilla profile that the game uses by default.
-    - LessLag: This applies optimizations to cut 3 frames of native input delay.
-    - LLUltra: This applies optimizations to cut 4 frames of native input delay.
-      - This also works on console, but the game resolution will be scaled down to keep it stutter free.
-      - On console, you may notice that certain UI elements look glitchy, such as the fighter cut-in screen, and match start countdown ui.
-    - LLDoubles (Recommended for doubles): This applies optimizations to cut 2 frames of native input delay. This should work even in doubles when there are alot of players on screen without stuttering.
+1. Hidden
+2. Full Info
+3. Performance Info / frame view
 
-**If you arent sure what profile to use, just leave it on Auto**
+While the overlay is in Full Info mode:
 
-Best profile for console:
-  - LessLag or LLUltra (depending on preference)
+- `D-pad Up / Down`: select a row
+- `D-pad Left / Right`: change the selected value
 
-Best profile for emulator:
-  - LLUltra
+Hold `Plus` or `Minus` while toggling from Full Info to open the hidden Debug view.
 
-Best profile for doubles:
-  - LLDoubles
+On Eden's default keyboard mapping, `ZL + ZR + D-pad Down` is usually `R + T + Down Arrow`.
 
-> The mod will apply the **selected render profile automatically** when entering a valid online match.  
-> Reverts to **vanilla settings** after exiting  
-> You can play offline/training modes without having to worry about timing differences.
+The overlay can be opened after the plugin loads. Latency and render settings can only be changed on valid online pre-match screens: Online Arena, Quickplay/Elite, and Local Online. During a match, the overlay is read-only.
 
-## 📝 Notes and Contribution
+## Features
 
-- The dynamic resolution logic currently only applies to zoom in moves (final hit/critical hit) and Sephiroth's gigaflare.  
-- Contributions are open especially for applying dynamic resolution to moves that cause stutter. I don't know if I'll have time to optimize every single move, so if you notice a specific move causes stutters, you can use smashline's api to contribute and optimize the move. You can start by viewing how `src/perf_scaler` currently applies dynamic resolution optimization.
+### Online info
 
-## 🙌 Credits
+The mod shows opponent connection info in supported online modes, including:
 
-Huge thanks to the following people who made this possible. Without these people, this project wouldn't have been possible:
+- RTT / ping
+- connection quality
+- green/yellow/red stability coloring
 
-- **Bludev**
-  For SSBU render system research and the initial less-lag and latency slider mod.
+If both players have the mod, it can also show extended opponent info:
 
-- **BlankMauser**
-  Creator of the SsbuSync and smash-ultelier mod, which this mod uses to modify ssbu's render system.
-  BlanksMauser's work and guidance on SSBU’s rendering internals were critical to making this mod possible.
+- selected latency
+- selected render profile
 
-- **Kinnay** & contributors of the NintendoClients repo/wiki
-  For guidance on network service implementation. The network service wouldn't have been possible if not for the incredible efforts of these people.
+### Latency controls
 
-- **Coolsonickirby**
-  For the imgui-smash plugin, making UI development significantly easier
+Available in Online Arena, Quickplay/Elite, and Local Online pre-match screens.
 
-- **The HDR team**
-  For smashline, allowing for easy figher/effect/moveset hooks and adjustments 
+Latency options:
 
-- **The developers of Skyline**
-  For the modding environment, allowing for code hooking/edits
+- `Auto`: use SSBU's normal latency calculation
+- `0f` through `25f`: force a manual delay-frame value
 
+Manual latency is usually best set from the opponent's ping and stability.
+
+### Render profiles
+
+Available in Online Arena, Quickplay/Elite, and Local Online pre-match screens.
+
+Profiles:
+
+- `Auto`: pick a recommended profile for the platform and opponent count
+- `Vanilla`: stock render settings
+- `LessLag`: cuts 3 frames of native input delay
+- `LLUltra`: cuts 4 frames of native input delay
+- `LLDoubles`: cuts 2 frames of native input delay; intended for doubles or heavier scenes
+
+`LLUltra` also works on console, but it lowers the game resolution to avoid stutter. Some UI elements may look off, especially fighter cut-ins and the match-start countdown.
+
+If you are unsure, leave the profile on `Auto`.
+
+Suggested profiles:
+
+- Console: `LessLag` or `LLUltra`
+- Emulator: `LLUltra`
+- Doubles: `LLDoubles`
+
+The selected render profile is applied when entering a valid online match and cleaned up after leaving it.
+
+## Notes and contributing
+
+The dynamic-resolution logic currently handles zoom-in moments, such as final-hit or critical-hit camera effects, and Sephiroth's Gigaflare.
+
+Contributions are welcome, especially for moves that still cause stutter. Start with `src/perf_scaler` if you want to add another move-specific optimization.
+
+## License
+
+This fork follows the repository license: AGPL-3.0. If you distribute builds, include the license and provide the corresponding source for the build.
+
+Do not include game files, keys, saves, or other copyrighted Nintendo assets in this repository or in release packages.
+
+## Credits
+
+- **saad-script** — original SSBU Online Deluxe work.
+- **Bludev** — SSBU render-system research and the original less-lag and latency-slider work.
+- **BlankMauser** — SsbuSync and smash-ultelier. This mod uses that work to modify SSBU's render system.
+- **Kinnay** and NintendoClients contributors — network-service documentation and implementation guidance.
+- **Coolsonickirby** — imgui-smash, which makes the overlay possible.
+- **HDR team** — smashline.
+- **Skyline developers** — the Switch modding runtime used by this project.

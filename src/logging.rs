@@ -8,28 +8,11 @@ use std::{
     ops::Deref,
     path::Path,
     sync::{LazyLock, Mutex},
-    time::SystemTime,
 };
 
 use log::{LevelFilter, Metadata, Record, SetLoggerError};
-use skyline::nn::time;
 
-pub use log::{error, info, warn};
-
-/// Since we can't rely on most time based libraries, this is a seconds -> date/time string based on the `chrono` crates implementation
-fn get_time_string() -> String {
-    let datetime: time::CalendarTime = time::get_calendar_time();
-
-    format!(
-        "{:04}-{:02}-{:02}_{:02}-{:02}-{:02}",
-        datetime.year,
-        datetime.month,
-        datetime.day,
-        datetime.hour,
-        datetime.minute,
-        datetime.second
-    )
-}
+pub use log::{error, info};
 
 static LOG_PATH: &str = "sd:/ultimate/ssbu_online_deluxe/logs";
 static FILE_LOG_BUFFER: usize = 0x2000; // Room for 0x2000 characters, might have performance issues if the logger level is "Info" or "Trace"
@@ -54,9 +37,6 @@ impl FileLogger {
 
 // Summon the file logger and create a file for it based on the current time (requires time to be initialized)
 static FILE_WRITER: LazyLock<FileLogger> = LazyLock::new(|| {
-    let seconds = SystemTime::now()
-        .duration_since(SystemTime::UNIX_EPOCH)
-        .expect("Clock may have gone backwards!");
     let path = Path::new(LOG_PATH).join("ssbu_online_deluxe.log");
     let _ = std::fs::create_dir_all(LOG_PATH);
     std::fs::File::create(path).map_or_else(
