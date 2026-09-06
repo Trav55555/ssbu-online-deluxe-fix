@@ -1,3 +1,11 @@
+Hello Trav55555!
+I'm editing this because you don't have a section called Issues in your repo, so I couldn't reach out like that.
+Will you update the repo, to support the latest Smash Bros version?
+I'd love to be able to use the mod in Elite too!
+
+Thank you!
+
+
 # SSBU Online Deluxe
 
 SSBU Online Deluxe is a work-in-progress mod for **Super Smash Bros. Ultimate**. It adds online latency controls, render-profile controls, and an optional overlay for connection and frame-time info.
