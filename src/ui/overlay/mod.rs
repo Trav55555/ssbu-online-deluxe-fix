@@ -15,7 +15,6 @@ use ultelier::sync_guest::{self, BufferMode, IndexMode, ResolutionLevel};
 
 static OVERLAY_UI_POLLER_CONTEXT: PollerContext =
     PollerContext::new(std::time::Duration::from_millis(167));
-static DEFAULT_FONT_BYTES: &[u8] = include_bytes!("../../../assets/fonts/default_font.otf");
 static IMGUI_EMPTY_CELL_STR: &str = "---\0";
 static IMGUI_INTERACT_TABLE_ROW_NAME_STRS: [&str; 4] =
     ["Name\0", "Ping\0", "NetLatency\0", "NetProfile\0"];
@@ -28,7 +27,6 @@ static IMGUI_FPS_TABLE_ROW_NAME_STRS: [&str; 4] =
     ["Ping\0", "Resolution\0", "FPS\0", "FrameTime\0"];
 const FRAME_GRAPH_CAPACITY: usize = 180;
 
-static mut DEFAULT_FONT: *mut ImFont = std::ptr::null_mut();
 static SELECTED_TABLE_ROW: AtomicUsize = AtomicUsize::new(ROW_NET_LATENCY);
 
 const ROW_NAME: usize = 0;
@@ -53,27 +51,6 @@ extern "C" {}
 
 unsafe extern "C" fn setup_imgui_context(imgui_ctx: *mut u64) {
     igSetCurrentContext(imgui_ctx as _);
-}
-
-unsafe extern "C" fn imgui_init() {
-    println!("Initializing Imgui...");
-
-    let io = igGetIO();
-    let fonts = (*io).Fonts;
-
-    //let range_builder = ImFontGlyphRangesBuilder_ImFontGlyphRangesBuilder();
-    //ImFontGlyphRangesBuilder_AddRanges(range_builder, ImFontAtlas_GetGlyphRangesDefault(fonts));
-    //let glyph_ranges = ImVector_ImWchar_create();
-    //ImFontGlyphRangesBuilder_BuildRanges(range_builder, glyph_ranges);
-    DEFAULT_FONT = ImFontAtlas_AddFontFromMemoryTTF(
-        fonts,
-        DEFAULT_FONT_BYTES.as_ptr() as *mut _,
-        DEFAULT_FONT_BYTES.len() as i32,
-        16.0,
-        std::ptr::null_mut(),
-        std::ptr::null_mut(),
-        //glyph_ranges as *const ImWchar,
-    );
 }
 
 fn ping_color_for_stability(stability: NetworkStability) -> ImVec4 {
@@ -608,7 +585,7 @@ unsafe extern "C" fn draw() {
         | ImGuiWindowFlags_NoCollapse
         | ImGuiWindowFlags_NoMove;
 
-    igPushFont(DEFAULT_FONT, scaled_font_size);
+    igPushFont(std::ptr::null_mut(), scaled_font_size);
 
     if !igBegin(
         IMGUI_WINDOW_TITLE.as_ptr() as _,
@@ -683,6 +660,5 @@ pub fn is_window_interactable() -> bool {
 
 pub(super) fn install() {
     imgui_api::imgui_setup_context(setup_imgui_context);
-    //imgui_api::imgui_smash_add_on_pre_init(imgui_init as _);
     imgui_api::imgui_smash_add_on_draw_frame(draw as _);
 }

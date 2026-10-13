@@ -1,0 +1,31 @@
+{
+  "upstream_deluxe": {
+    "tag": "v1.4.3",
+    "source_commit": "25f67c99468ff6b8fad56fb5107c959fdc09b087",
+    "url": "https://github.com/saad-script/ssbu-online-deluxe/releases/download/v1.4.3/ssbu-online-deluxe-v1.4.3.zip",
+    "sha256": "5640c63ae55dc3d959e5deec822c0ec63e2deed188620c6b955d2e1280aca3e1",
+    "provides": ["Skyline ExeFS", "libssbusync.nro", "libnx_over.nro", "overclock sysmodule"],
+    "note": "Install prerequisites below separately, then replace the upstream Deluxe plugin with this fork. Official Elite render optimizations are restricted by SsbuSync."
+  },
+  "pia_manager": {
+    "tag": "v1.3.0",
+    "url": "https://github.com/project-ultelier/ssbu-pia-interface/releases/download/v1.3.0/libssbu_pia_manager.nro",
+    "sha256": "e07aa1bfb9060b8ed8e1f5c9c11c80c48d5e2275915888f82120c8bd288ae5ff"
+  },
+  "imgui_smash": {
+    "tag": "v1.0.0",
+    "url": "https://github.com/Coolsonickirby/imgui-smash/releases/download/v1.0.0/libimgui_smash.nro"
+  },
+  "smashline": {
+    "tag": "v1.6.7",
+    "url": "https://github.com/HDR-Development/smashline/releases/download/v1.6.7/libsmashline_plugin.nro"
+  },
+  "nro_hook": {
+    "tag": "v0.4.0",
+    "url": "https://github.com/ultimate-research/nro-hook-plugin/releases/download/v0.4.0/libnro_hook.nro"
+  },
+  "arcropolis": {
+    "tag": "v4.1.1",
+    "url": "https://github.com/Raytwo/ARCropolis/releases/download/v4.1.1/release.zip"
+  }
+}

@@ -1,5 +1,5 @@
 /target
-Cargo.lock
+/.pi/
 yuzu_build.ps1
 ryujinx_build.ps1
 

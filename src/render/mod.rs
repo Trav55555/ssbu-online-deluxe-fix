@@ -8,6 +8,10 @@ extern "C" {
     fn nx_over_configure_nstuff_oc() -> u32;
 }
 
+pub(super) fn on_nro_load() {
+    profile::init();
+}
+
 pub fn install() {
     let is_emulator = is_emulator();
 
@@ -18,5 +22,5 @@ pub fn install() {
     }
 
     ultelier::sync_guest::install(config);
-    profile::install();
+    profile::init();
 }

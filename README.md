@@ -8,6 +8,10 @@ Use it at your own risk. I have tested it online without major issues, but there
 
 ## Compatibility
 
+The next release candidate, **v1.1.0**, targets **SSBU 13.0.5 only**. It is not published or runtime-validated yet. The published [v1.0.1 release](https://github.com/Trav55555/ssbu-online-deluxe-fix/releases/tag/v1.0.1) remains available for **SSBU 13.0.4**.
+
+Use the release matching your installed game version. See [version support and validation gates](docs/version-support.md).
+
 - Nintendo Switch hardware
 - Eden emulator for startup and LDN smoke testing
 - Other emulators are untested
@@ -17,10 +21,11 @@ Eden does **not** support Nintendo's official Online services, so it cannot vali
 
 ## Installation
 
-1. Remove any old latency-slider, vsync, or less-lag mods.
-2. Download the release zip and extract it.
-3. Copy the `atmosphere` folder to the root of your SD card, or to the emulator `sdmc` directory.
-4. Fully restart the Switch or emulator.
+1. Install the [matching runtime prerequisites](docs/version-support.md#install-the-1305-candidate) for the 13.0.5 candidate. This fork's ZIP contains only the Deluxe plugin and documentation.
+2. Remove any old latency-slider, vsync, or less-lag mods.
+3. Download the release ZIP matching your SSBU version and extract it.
+4. Copy the `atmosphere` folder to the root of your SD card, or to the emulator `sdmc` directory. Keep the prerequisite plugins installed.
+5. Fully restart the Switch or emulator.
 
 ### Eden notes
 
@@ -30,7 +35,7 @@ Eden currently needs a little extra setup:
 - Go to `System`.
 - Enable `RNG Seed` and set it to `00000000`.
 - Use a complete, known-good Skyline ExeFS set for SSBU: `exefs/subsdk9` and `exefs/main.npdm`.
-- Use SSBU update `13.0.3` or another update that matches the mod's hook offsets. Base `1.0.0` is not enough.
+- Use SSBU `13.0.5` for the v1.1.0 candidate, or `13.0.4` for v1.0.1. Base `1.0.0` is not supported.
 
 On Eden, the dynamic-resolution perf-scaler hooks are skipped. Those Smashline fighter-frame hooks froze Eden during testing. Latency controls, render-profile controls, the overlay, and online-mode hooks still load.
 
@@ -71,7 +76,7 @@ Hold `Plus` or `Minus` while toggling from Full Info to open the hidden Debug vi
 
 On Eden's default keyboard mapping, `ZL + ZR + D-pad Down` is usually `R + T + Down Arrow`.
 
-The overlay can be opened after the plugin loads. Latency and render settings can only be changed on valid online pre-match screens: Online Arena, Quickplay/Elite, and Local Online. During a match, the overlay is read-only.
+The overlay can be opened after the plugin loads. Latency and render settings can be selected on supported online pre-match screens: Online Arena and Local Online. The fork also retains experimental Quickplay/Elite paths, but their runtime behavior is unverified. During a match, the overlay is read-only.
 
 ## Features
 
@@ -90,7 +95,7 @@ If both players have the mod, it can also show extended opponent info:
 
 ### Latency controls
 
-Available in Online Arena, Quickplay/Elite, and Local Online pre-match screens.
+Intended for Online Arena and Local Online pre-match screens. Quickplay/Elite latency behavior has not been console-tested.
 
 Latency options:
 
@@ -101,7 +106,7 @@ Manual latency is usually best set from the opponent's ping and stability.
 
 ### Render profiles
 
-Available in Online Arena, Quickplay/Elite, and Local Online pre-match screens.
+Intended for Online Arena and Local Online pre-match screens. The matching SsbuSync runtime restricts render optimizations in official Elite Smash; this fork's mode detection does not bypass that restriction.
 
 Profiles:
 

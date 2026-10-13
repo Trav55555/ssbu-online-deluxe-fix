@@ -3,9 +3,10 @@ use std::sync::{
     LazyLock,
 };
 
-use skyline::hooks::InlineCtx;
 use ssbu_pia_interface::StationConnectionManager;
-use ultelier::sync_guest::{self, profile::DockedProfile, BufferMode, IndexMode, ResolutionLevel};
+use ultelier::sync_guest::{
+    self, profile::DockedProfile, BufferMode, IndexMode, OverclockProfile, ResolutionLevel,
+};
 
 use crate::{input_poll::InputSnapshot, utils::is_emulator};
 
@@ -99,6 +100,27 @@ impl RenderProfileSettings {
             _ => panic!("Must specific a valid render profile"),
         }
     }
+    pub fn from_env() -> Self {
+        Self {
+            buffer_mode: sync_guest::buffer_mode()
+                .flatten()
+                .unwrap_or(BufferMode::Triple),
+            index_mode: sync_guest::index_mode()
+                .flatten()
+                .unwrap_or(IndexMode::TwoBehind),
+            default_resolution_level: sync_guest::default_game_resolution_level()
+                .flatten()
+                .unwrap_or(ResolutionLevel::Res1920x1080),
+            dynamic_res_enabled: sync_guest::dynamic_resolution_enabled().unwrap_or(false),
+            vsync_enabled: sync_guest::vsync_enabled().unwrap_or(true),
+            render_opts_enabled: sync_guest::render_opts_enabled().unwrap_or(false),
+            overclock_profile: match sync_guest::current_overclock_profile().flatten() {
+                Some(OverclockProfile::PerformanceSingles) => DockedProfile::Singles,
+                Some(OverclockProfile::PerformanceFfa) => DockedProfile::Ffa,
+                _ => DockedProfile::Rest,
+            },
+        }
+    }
     pub fn to_bits(&self) -> u16 {
         (self.buffer_mode as u16)
             | ((self.index_mode as u16) << 2)
@@ -170,18 +192,14 @@ impl std::fmt::Display for RenderProfile {
 
 pub struct RenderProfileManager {
     auto_mode: AtomicBool,
-    active_profile_settings: AtomicU16,
     selected_profile_settings: AtomicU16,
-    dirty_flag: AtomicBool,
 }
 
 impl RenderProfileManager {
     pub fn new() -> Self {
         RenderProfileManager {
             auto_mode: AtomicBool::new(true),
-            active_profile_settings: AtomicU16::new(RenderProfileSettings::vanilla().to_bits()),
             selected_profile_settings: AtomicU16::new(RenderProfileSettings::vanilla().to_bits()),
-            dirty_flag: AtomicBool::new(false),
         }
     }
     pub fn selected_render_profile_settings(&self) -> RenderProfileSettings {
@@ -189,8 +207,7 @@ impl RenderProfileManager {
             .unwrap_or_else(RenderProfileSettings::vanilla)
     }
     pub fn active_render_profile_settings(&self) -> RenderProfileSettings {
-        RenderProfileSettings::from_bits(self.active_profile_settings.load(Ordering::SeqCst))
-            .unwrap_or_else(RenderProfileSettings::vanilla)
+        RenderProfileSettings::from_env()
     }
     pub fn selected_render_profile(&self) -> RenderProfile {
         RenderProfile::from_settings(&self.selected_render_profile_settings())
@@ -205,16 +222,34 @@ impl RenderProfileManager {
         );
     }
     fn apply_profile_settings_immediate(&self, rps: &RenderProfileSettings) {
-        self.active_profile_settings
-            .store(rps.to_bits(), Ordering::SeqCst);
-        self.dirty_flag.store(true, Ordering::SeqCst);
+        let _ = sync_guest::set_default_game_resolution_level(rps.default_resolution_level);
+        let _ = sync_guest::set_dynamic_resolution_enabled(rps.dynamic_res_enabled);
+        if let Some(flags) = sync_guest::env_flags() {
+            let flags = flags
+                .with(
+                    sync_guest::EnvironmentFlags::VSYNC_ENABLED,
+                    rps.vsync_enabled,
+                )
+                .with(
+                    sync_guest::EnvironmentFlags::RENDER_OPTS_ENABLED,
+                    rps.render_opts_enabled,
+                )
+                .with(
+                    sync_guest::EnvironmentFlags::TRIPLE_ENABLED,
+                    rps.buffer_mode == BufferMode::Triple,
+                )
+                .with_value(
+                    sync_guest::EnvironmentFlags::INDEX_MODE,
+                    rps.index_mode as u32,
+                );
+            let _ = sync_guest::replace_env_flags(flags);
+        }
+        if !is_emulator() {
+            sync_guest::profile::apply_docked_profile(rps.overclock_profile);
+        }
     }
     pub fn apply_selected_profile_settings(&self) {
-        self.active_profile_settings.store(
-            self.selected_profile_settings.load(Ordering::SeqCst),
-            Ordering::SeqCst,
-        );
-        self.dirty_flag.store(true, Ordering::SeqCst);
+        self.apply_profile_settings_immediate(&self.selected_render_profile_settings());
     }
     pub fn select_next_render_profile(&self) -> RenderProfile {
         let selected_rp = self.selected_render_profile();
@@ -292,20 +327,20 @@ impl RenderProfileManager {
         false
     }
     pub fn auto_select_profile(&self, num_opponents: usize) {
-        self.auto_select_profile_inner(num_opponents, false);
+        self.auto_select_profile_inner(num_opponents > 0, num_opponents > 2);
     }
-    pub fn auto_select_match_profile(&self, num_opponents: usize) {
-        self.auto_select_profile_inner(num_opponents, true);
+    pub fn auto_select_match_profile(&self, is_doubles: bool) {
+        self.auto_select_profile_inner(true, is_doubles);
     }
-    fn auto_select_profile_inner(&self, num_opponents: usize, assume_singles_if_unknown: bool) {
+    fn auto_select_profile_inner(&self, is_connected: bool, is_doubles: bool) {
         if !self.is_auto_mode() {
             return;
         }
-        if num_opponents == 0 && !assume_singles_if_unknown {
+        if !is_connected {
             self.select_render_profile_immediate(RenderProfile::Vanilla);
             return;
         }
-        match (is_emulator(), num_opponents > 2) {
+        match (is_emulator(), is_doubles) {
             (_, true) => self.select_render_profile_immediate(RenderProfile::LessLagDoubles),
             (true, _) => self.select_render_profile_immediate(RenderProfile::LessLagUltra),
             (false, _) => self.select_render_profile_immediate(RenderProfile::LessLag),
@@ -316,29 +351,22 @@ impl RenderProfileManager {
 pub static RENDER_PROFILE_MANAGER: LazyLock<RenderProfileManager> =
     LazyLock::new(|| RenderProfileManager::new());
 
-#[skyline::hook(offset = 0x3747518, inline)]
-unsafe fn main_loop_hook(_ctx: &InlineCtx) {
-    if RENDER_PROFILE_MANAGER
-        .dirty_flag
-        .swap(false, Ordering::SeqCst)
-    {
-        let rps = RENDER_PROFILE_MANAGER.active_render_profile_settings();
-        let _ = sync_guest::set_default_game_resolution_level(rps.default_resolution_level);
-        let _ = sync_guest::set_dynamic_resolution_enabled(rps.dynamic_res_enabled);
-        let _ = sync_guest::set_vsync_enabled(rps.vsync_enabled);
-        let _ = sync_guest::set_render_opts_enabled(rps.render_opts_enabled);
-        let _ = sync_guest::set_buffer_mode(rps.buffer_mode);
-        let _ = sync_guest::set_index_mode(rps.index_mode);
-        if !is_emulator() {
-            sync_guest::profile::apply_docked_profile(rps.overclock_profile);
-        }
-    }
-}
-
 pub(crate) fn match_init() {
     let num_connected_stations = StationConnectionManager::num_connected_stations();
-    RENDER_PROFILE_MANAGER.auto_select_match_profile(num_connected_stations);
-    RENDER_PROFILE_MANAGER.apply_selected_profile_settings();
+    if crate::net::is_connected()
+        && crate::net::is_valid_online_mode()
+        && crate::net::is_in_real_game()
+    {
+        RENDER_PROFILE_MANAGER.auto_select_match_profile(
+            crate::net::get_match_status() == crate::net::MatchStatus::Doubles,
+        );
+        RENDER_PROFILE_MANAGER.apply_selected_profile_settings();
+    } else {
+        RENDER_PROFILE_MANAGER.apply_profile_settings_immediate(&RenderProfileSettings::vanilla());
+        if !is_emulator() && crate::net::is_in_game() {
+            let _ = sync_guest::profile::apply_singles();
+        }
+    }
     crate::logging::info!(
         "RENDER PROFILE MATCH INIT: selected={} active={} stations={}",
         RENDER_PROFILE_MANAGER.selected_render_profile(),
@@ -349,12 +377,14 @@ pub(crate) fn match_init() {
 
 pub(crate) fn match_cleanup() {
     RENDER_PROFILE_MANAGER.apply_profile_settings_immediate(&RenderProfileSettings::vanilla());
-    crate::logging::info!("RENDER PROFILE MATCH CLEANUP: active=Vanilla");
+    crate::logging::info!(
+        "RENDER PROFILE MATCH CLEANUP: active={}",
+        RENDER_PROFILE_MANAGER.active_render_profile()
+    );
 }
 
-pub(super) fn install() {
+pub(super) fn init() {
     let _ = LazyLock::force(&RENDER_PROFILE_MANAGER);
-    skyline::install_hook!(main_loop_hook);
 
     RENDER_PROFILE_MANAGER.apply_profile_settings_immediate(&RenderProfileSettings::vanilla());
 }

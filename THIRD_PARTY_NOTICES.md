@@ -24,4 +24,4 @@ Notable dependencies to verify before release:
 
 Do not commit Nintendo game dumps, update/DLC packages, keys, saves, or proprietary game assets.
 
-`assets/fonts/default_font.otf` identifies itself as `nintendoP_RodinNTLG-B003` with Fontworks copyright metadata. Verify redistribution rights before publishing source or binary packages that include or embed it.
+`assets/fonts/default_font.otf` identifies itself as `nintendoP_RodinNTLG-B003` with Fontworks copyright metadata. The v1.1.0 candidate no longer references or embeds this asset and its plugin package does not include it. The asset remains in repository history and the current checkout; verify redistribution rights before publishing source packages that include it.

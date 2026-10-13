@@ -4,6 +4,8 @@ use ultelier::sync_guest::{self, ResolutionLevel};
 mod common;
 mod sephiroth;
 
+const MAX_FIGHTERS: usize = 8;
+
 use crate::render::profile::RENDER_PROFILE_MANAGER;
 
 static ENTRY_BASE_RESOLUTION: AtomicU8 = AtomicU8::new(ResolutionLevel::Res1920x1080 as u8);
@@ -37,6 +39,9 @@ pub(in crate::perf_scaler) fn pop_dynamic_res_report() {
 }
 
 pub(crate) fn match_init() {
+    sync_guest::clear_all_dynamic_res_report();
+    common::init();
+    sephiroth::init();
     let rps = RENDER_PROFILE_MANAGER.active_render_profile_settings();
     let base_res_level = rps.default_resolution_level();
     ENTRY_BASE_RESOLUTION.store(base_res_level as u8, Ordering::SeqCst);
@@ -44,6 +49,8 @@ pub(crate) fn match_init() {
 
 pub(crate) fn match_cleanup() {
     sync_guest::clear_all_dynamic_res_report();
+    common::init();
+    sephiroth::init();
 }
 
 pub fn install() {
