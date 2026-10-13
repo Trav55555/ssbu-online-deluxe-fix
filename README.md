@@ -128,6 +128,10 @@ Suggested profiles:
 
 The selected render profile is applied when entering a valid online match and cleaned up after leaving it.
 
+## Testing
+
+See [the testing harness](docs/testing.md) for CI checks, diagnostic builds, and isolated runtime preflight. Host checks do not prove game compatibility.
+
 ## Notes and contributing
 
 The dynamic-resolution logic currently handles zoom-in moments, such as final-hit or critical-hit camera effects, and Sephiroth's Gigaflare.

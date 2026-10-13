@@ -67,8 +67,32 @@ mod net {
 }
 #[macro_export]
 macro_rules! host_info { ($($args:tt)*) => { let _ = format_args!($($args)*); }; }
+#[path = "../src/logging/events.rs"]
+mod production_events;
+
+#[macro_export]
+macro_rules! host_event {
+    ($name:expr $(, $key:literal => $value:expr)* $(,)?) => {
+        crate::logging::record($name, &[
+            $(($key, crate::production_events::Value::from($value))),*
+        ]);
+    };
+}
 mod logging {
+    pub use crate::host_event as event;
     pub use crate::host_info as info;
+    use std::cell::RefCell;
+    thread_local! { static EVENTS: RefCell<Vec<String>> = const { RefCell::new(Vec::new()) }; }
+    pub fn record(name: &str, fields: &[(&str, crate::production_events::Value<'_>)]) {
+        EVENTS.with(|events| {
+            events
+                .borrow_mut()
+                .push(crate::production_events::format_event(0, name, fields))
+        });
+    }
+    pub fn last() -> String {
+        EVENTS.with(|events| events.borrow().last().unwrap().clone())
+    }
 }
 
 pub mod sync_guest {
@@ -105,6 +129,9 @@ pub mod sync_guest {
         }
         pub fn with_value(self, mask: u32, value: u32) -> Self {
             Self((self.0 & !mask) | ((value << mask.trailing_zeros()) & mask))
+        }
+        pub fn bits(self) -> u32 {
+            self.0
         }
         fn vanilla() -> Self {
             Self(Self::TRIPLE_ENABLED | Self::VSYNC_ENABLED | (2 << 3))
@@ -296,6 +323,9 @@ fn unavailable_runtime_does_not_report_requested_optimizations() {
         manager.active_render_profile(),
         production::RenderProfile::Vanilla
     );
+    let event = logging::last();
+    assert!(event.contains("\"flags\":null"), "{event}");
+    assert!(event.contains("\"resolution_result\":null"), "{event}");
 }
 
 #[test]

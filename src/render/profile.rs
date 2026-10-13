@@ -222,8 +222,10 @@ impl RenderProfileManager {
         );
     }
     fn apply_profile_settings_immediate(&self, rps: &RenderProfileSettings) {
-        let _ = sync_guest::set_default_game_resolution_level(rps.default_resolution_level);
-        let _ = sync_guest::set_dynamic_resolution_enabled(rps.dynamic_res_enabled);
+        let _resolution_result =
+            sync_guest::set_default_game_resolution_level(rps.default_resolution_level);
+        let _dynamic_result = sync_guest::set_dynamic_resolution_enabled(rps.dynamic_res_enabled);
+        let mut _flags_result = None;
         if let Some(flags) = sync_guest::env_flags() {
             let flags = flags
                 .with(
@@ -242,11 +244,21 @@ impl RenderProfileManager {
                     sync_guest::EnvironmentFlags::INDEX_MODE,
                     rps.index_mode as u32,
                 );
-            let _ = sync_guest::replace_env_flags(flags);
+            _flags_result = sync_guest::replace_env_flags(flags);
         }
         if !is_emulator() {
             sync_guest::profile::apply_docked_profile(rps.overclock_profile);
         }
+        crate::logging::event!("render_apply",
+            "requested_bits" => rps.to_bits(),
+            "resolution_result" => _resolution_result,
+            "dynamic_result" => _dynamic_result,
+            "flags_result" => _flags_result.map(|flags| flags.bits()),
+            "flags" => sync_guest::env_flags().map(|flags| flags.bits()),
+            "resolution" => sync_guest::default_game_resolution_level().flatten().map(|level| level as u32),
+            "dynamic" => sync_guest::dynamic_resolution_enabled(),
+            "overclock" => sync_guest::current_overclock_profile().flatten().map(|profile| profile as u32),
+        );
     }
     pub fn apply_selected_profile_settings(&self) {
         self.apply_profile_settings_immediate(&self.selected_render_profile_settings());
@@ -367,6 +379,13 @@ pub(crate) fn match_init() {
             let _ = sync_guest::profile::apply_singles();
         }
     }
+    crate::logging::event!("render_state",
+        "context" => "match_init",
+        "flags" => sync_guest::env_flags().map(|flags| flags.bits()),
+        "resolution" => sync_guest::default_game_resolution_level().flatten().map(|level| level as u32),
+        "dynamic" => sync_guest::dynamic_resolution_enabled(),
+        "overclock" => sync_guest::current_overclock_profile().flatten().map(|profile| profile as u32),
+    );
     crate::logging::info!(
         "RENDER PROFILE MATCH INIT: selected={} active={} stations={}",
         RENDER_PROFILE_MANAGER.selected_render_profile(),

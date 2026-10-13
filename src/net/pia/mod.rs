@@ -4,6 +4,8 @@ use std::sync::{
 };
 
 use arc_swap::ArcSwap;
+#[cfg(feature = "runtime_trace")]
+use std::sync::atomic::AtomicU64;
 
 mod packet;
 use packet::PiaCustomNetPacket;
@@ -31,6 +33,8 @@ struct StationNetInfo {
     is_valid_comms: AtomicBool,
     latency_bits: AtomicU8,
     render_profile_settings_bits: AtomicU16,
+    #[cfg(feature = "runtime_trace")]
+    last_trace: AtomicU64,
 }
 
 impl Clone for StationNetInfo {
@@ -42,6 +46,26 @@ impl Clone for StationNetInfo {
             render_profile_settings_bits: AtomicU16::new(
                 self.render_profile_settings_bits.load(Ordering::SeqCst),
             ),
+            #[cfg(feature = "runtime_trace")]
+            last_trace: AtomicU64::new(self.last_trace.load(Ordering::SeqCst)),
+        }
+    }
+}
+
+#[cfg(feature = "runtime_trace")]
+impl StationNetInfo {
+    fn trace_metadata(&self, bytes: &[u8], packet: Option<PiaCustomNetPacket>) {
+        let version = bytes.first().map(|v| *v as u32);
+        let signature = version.unwrap_or(256) as u64
+            | ((packet.is_some() as u64) << 9)
+            | ((packet.map_or(0, |p| p.latency_bits) as u64) << 10)
+            | ((packet.map_or(0, |p| p.render_profile_settings_bits) as u64) << 18);
+        if self.last_trace.swap(signature, Ordering::SeqCst) != signature {
+            crate::logging::event!("peer_metadata",
+                "version" => version, "valid" => packet.is_some(),
+                "latency_bits" => packet.map(|p| p.latency_bits as u32),
+                "render_bits" => packet.map(|p| p.render_profile_settings_bits as u32),
+            );
         }
     }
 }
@@ -98,6 +122,8 @@ fn on_station_connection_changed(
             render_profile_settings_bits: AtomicU16::new(
                 RenderProfileSettings::vanilla().to_bits(),
             ),
+            #[cfg(feature = "runtime_trace")]
+            last_trace: AtomicU64::new(u64::MAX),
         });
     } else if event == ConnectionChangedEvent::StationDisconnected {
         if let Some(i) = stations_table.iter().position(|s| s.id == id) {
@@ -107,6 +133,10 @@ fn on_station_connection_changed(
 
     CONNECTED_STATION_TABLE_ATOMIC_VIEW.store(Arc::new(stations_table.clone()));
 
+    crate::logging::event!("peer_connection",
+        "connected" => event == ConnectionChangedEvent::StationConnected,
+        "peer_count" => new_num_connected,
+    );
     RENDER_PROFILE_MANAGER.auto_select_profile(new_num_connected);
 }
 
@@ -135,7 +165,10 @@ fn receive_pia_data_hook(station: ConnectedStation, data: &[u8]) {
     let id = station.get_id();
     let stations_table = CONNECTED_STATION_TABLE_ATOMIC_VIEW.load();
     if let Some(station) = stations_table.iter().find(|s| s.id == id) {
-        let Some(data) = PiaCustomNetPacket::decode(data) else {
+        let packet = PiaCustomNetPacket::decode(data);
+        #[cfg(feature = "runtime_trace")]
+        station.trace_metadata(data, packet);
+        let Some(data) = packet else {
             station.is_valid_comms.store(false, Ordering::SeqCst);
             println!("Invalid or incompatible custom peer metadata");
             return;
@@ -151,6 +184,16 @@ fn receive_pia_data_hook(station: ConnectedStation, data: &[u8]) {
 }
 
 pub(super) fn install() {
+    #[cfg(feature = "runtime_trace")]
+    {
+        let version = crate::utils::lookup_symbol_addr(b"ssbu_pia_manager_api_version\0").map(
+            |address| unsafe {
+                let get_version: unsafe extern "C" fn() -> u32 = std::mem::transmute(address);
+                get_version()
+            },
+        );
+        crate::logging::event!("dependency_apis", "pia" => version);
+    }
     ssbu_pia_interface::install();
     StationConnectionManager::set_enabled(true);
     StationConnectionManager::register_station_connection_changed_callback(

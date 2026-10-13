@@ -37,7 +37,9 @@ fn setup_panic_hook() {
 fn on_nro_load(_info: &skyline::nro::NroInfo) {
     static NRO_LOADED: AtomicBool = AtomicBool::new(false);
     if !NRO_LOADED.swap(true, Ordering::SeqCst) {
+        logging::event!("nro_loaded");
         render::on_nro_load();
+        logging::event!("dependency_apis", "ssbusync" => ultelier::sync_guest::api_version());
     }
 }
 
@@ -46,7 +48,14 @@ pub fn main() {
     setup_panic_hook();
     let _ = logging::init(log::LevelFilter::Info);
     let game_version = skyline::nn::oe::get_display_version();
+    logging::event!("boot",
+        "game_version" => game_version.as_str(),
+        "required_version" => env!("SSBU_VERSION"),
+        "mod_version" => env!("CARGO_PKG_VERSION"),
+        "emulator" => utils::is_emulator(),
+    );
     if game_version != env!("SSBU_VERSION") {
+        logging::event!("version_refused", "game_version" => game_version.as_str());
         let detail = format!(
             "This build requires SSBU {}. Detected {}. Install the release matching your game version. No Deluxe hooks were installed.\0",
             env!("SSBU_VERSION"), game_version
@@ -69,6 +78,7 @@ pub fn main() {
     skyline::nro::add_hook(on_nro_load)
         .expect("Unable to add NRO load hook! Make sure nro hook plugin is present.");
 
+    logging::event!("dependency_apis", "ssbusync" => ultelier::sync_guest::api_version());
     render::install();
     net::install();
     ui::install();
@@ -78,4 +88,5 @@ pub fn main() {
     } else {
         perf_scaler::install();
     }
+    logging::event!("hooks_installed", "perf_scaler" => !utils::is_emulator());
 }

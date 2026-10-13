@@ -42,8 +42,8 @@ extern "C" fn sephiroth_fighter_frame(fighter: &mut L2CFighterCommon) {
             status == *FIGHTER_EDGE_STATUS_KIND_SPECIAL_N_SHOOT && charge_kind >= 3;
         let was_active = active.swap(fully_charged_shoot, Ordering::SeqCst);
         match (was_active, fully_charged_shoot) {
-            (false, true) => push_dynamic_res_report(),
-            (true, false) => pop_dynamic_res_report(),
+            (false, true) => push_dynamic_res_report(entry_id as u32),
+            (true, false) => pop_dynamic_res_report(entry_id as u32),
             _ => {}
         }
     }

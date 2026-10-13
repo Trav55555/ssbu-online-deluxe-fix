@@ -11,10 +11,11 @@ def main() -> int:
     root = Path(__file__).resolve().parents[1]
     try:
         with tempfile.TemporaryDirectory(prefix="ssbu-host-tests-") as temp:
-            for name in ("compatibility_host", "render_profile_host"):
+            for name in ("compatibility_host", "render_profile_host", "events_host"):
                 binary = Path(temp) / name
                 subprocess.run(
-                    ["rustc", "--edition=2021", "--test", str(root / "tests" / f"{name}.rs"),
+                    ["rustc", "--edition=2021", "--cfg", 'feature="runtime_trace"',
+                     "--test", str(root / "tests" / f"{name}.rs"),
                      "-o", str(binary)],
                     check=True, cwd=root,
                 )

@@ -1,0 +1,50 @@
+{
+  "schema": 1,
+  "game_version": "13.0.5",
+  "isolated_profile": true,
+  "profile": "/path/to/dedicated-eden-profile",
+  "emulator": "/path/to/Eden.AppImage",
+  "game": "/path/to/legal/base.nsp",
+  "files": {
+    "plugin": {
+      "path": "/path/to/dedicated-eden-profile/plugin",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "skyline_subsdk": {
+      "path": "/path/to/dedicated-eden-profile/skyline_subsdk",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "skyline_npdm": {
+      "path": "/path/to/dedicated-eden-profile/skyline_npdm",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "ssbusync": {
+      "path": "/path/to/dedicated-eden-profile/ssbusync",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "nx_over": {
+      "path": "/path/to/dedicated-eden-profile/nx_over",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "pia_manager": {
+      "path": "/path/to/dedicated-eden-profile/pia_manager",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "imgui_smash": {
+      "path": "/path/to/dedicated-eden-profile/imgui_smash",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "smashline": {
+      "path": "/path/to/dedicated-eden-profile/smashline",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "nro_hook": {
+      "path": "/path/to/dedicated-eden-profile/nro_hook",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    },
+    "arcropolis": {
+      "path": "/path/to/dedicated-eden-profile/arcropolis",
+      "sha256": "REPLACE_WITH_INDEPENDENTLY_RECORDED_SHA256"
+    }
+  }
+}

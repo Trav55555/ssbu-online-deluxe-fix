@@ -44,7 +44,7 @@ extern "C" fn global_critical_hit_fighter_frame(fighter: &mut L2CFighterCommon) 
             cooldown.store(FINISH_COOLDOWN_FRAMES, Ordering::SeqCst);
         } else if cooldown.fetch_sub(1, Ordering::SeqCst) <= 1 {
             if active.swap(false, Ordering::SeqCst) {
-                pop_dynamic_res_report();
+                pop_dynamic_res_report(entry_id as u32);
             }
         }
     }
@@ -69,7 +69,7 @@ unsafe fn fighter_cut_in_start(
     };
     CRITICAL_HIT_COOLDOWN[entry_id as usize].store(FINISH_COOLDOWN_FRAMES, Ordering::SeqCst);
     if !active.swap(true, Ordering::SeqCst) {
-        push_dynamic_res_report();
+        push_dynamic_res_report(entry_id as u32);
     }
 }
 

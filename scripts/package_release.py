@@ -17,7 +17,7 @@ import zipfile
 
 PLUGIN_PATH = "atmosphere/contents/01006A800016E000/romfs/skyline/plugins/libssbu_online_deluxe.nro"
 BUILD_PATH = "target/aarch64-skyline-switch/release/libssbu_online_deluxe.nro"
-DOCUMENTS = ("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "docs/version-support.md")
+DOCUMENTS = ("README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "docs/version-support.md", "docs/testing.md")
 
 
 def package_candidate(root: Path, output: Path) -> Path:

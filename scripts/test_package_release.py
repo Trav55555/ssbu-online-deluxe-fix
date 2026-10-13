@@ -56,7 +56,7 @@ class ReleasePackagingTests(unittest.TestCase):
             self.assertEqual(package.read(plugin), self.binary)
             self.assertEqual(set(package.namelist()), {
                 plugin, "SSBU_VERSION", "Cargo.lock", "INSTALL.txt", "release.json",
-                "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "docs/version-support.md",
+                "README.md", "LICENSE", "THIRD_PARTY_NOTICES.md", "docs/version-support.md", "docs/testing.md",
             })
             manifest = json.loads(package.read("release.json"))
             self.assertEqual(manifest["ssbu_version"], "13.0.5")

@@ -39,6 +39,7 @@ extern "C" {
 unsafe fn online_melee_any_scene_create(_: &InlineCtx) {
     println!("ONLINE ELITE INIT");
     crate::logging::info!("ONLINE ELITE INIT");
+    crate::logging::event!("scene", "name" => "online_melee");
     LOCAL_ROOM_PANE_HANDLE.store(0, Ordering::SeqCst);
     ONLINE_ARENA_PANE_HANDLE.store(0, Ordering::SeqCst);
     ONLINE_MELEE_MODE.store(true, Ordering::SeqCst);
@@ -49,6 +50,7 @@ unsafe fn online_melee_any_scene_create(_: &InlineCtx) {
 unsafe fn bg_matchmaking_seq(_: &InlineCtx) {
     println!("ONLINE BG MM INIT");
     crate::logging::info!("ONLINE BG MM INIT");
+    crate::logging::event!("scene", "name" => "matchmaking");
     LOCAL_ROOM_PANE_HANDLE.store(0, Ordering::SeqCst);
     ONLINE_ARENA_PANE_HANDLE.store(0, Ordering::SeqCst);
     ONLINE_MELEE_MODE.store(true, Ordering::SeqCst);
@@ -59,6 +61,7 @@ unsafe fn bg_matchmaking_seq(_: &InlineCtx) {
 unsafe fn main_menu(_: &InlineCtx) {
     println!("MAIN MENU INIT");
     crate::logging::info!("MAIN MENU INIT");
+    crate::logging::event!("scene", "name" => "main_menu");
     LOCAL_ROOM_PANE_HANDLE.store(0, Ordering::SeqCst);
     ONLINE_ARENA_PANE_HANDLE.store(0, Ordering::SeqCst);
     ONLINE_MELEE_MODE.store(false, Ordering::SeqCst);
@@ -67,6 +70,7 @@ unsafe fn main_menu(_: &InlineCtx) {
 
 #[skyline::hook(offset = 0x22d9b50, inline)]
 unsafe fn arena_seq(_: &InlineCtx) {
+    crate::logging::event!("scene", "name" => "arena_menu");
     println!("ONLINE ARENA INIT");
     crate::logging::info!("ONLINE ARENA INIT");
     ONLINE_MELEE_MODE.store(false, Ordering::SeqCst);
@@ -83,6 +87,7 @@ unsafe fn online_arena_update_room_hook(_: &skyline::hooks::InlineCtx) {
 
 #[skyline::hook(offset = 0x1887b1c, inline)]
 unsafe fn online_arena_set_room_id(ctx: &skyline::hooks::InlineCtx) {
+    crate::logging::event!("scene", "name" => "arena_room");
     println!("ONLINE ARENA INIT");
     crate::logging::info!("ONLINE ARENA INIT");
     ONLINE_MELEE_MODE.store(false, Ordering::SeqCst);
@@ -101,6 +106,7 @@ unsafe fn online_arena_set_room_id(ctx: &skyline::hooks::InlineCtx) {
 unsafe fn store_local_menu_pane(ctx: &InlineCtx) {
     println!("LOCAL ONLINE INIT");
     crate::logging::info!("LOCAL ONLINE INIT");
+    crate::logging::event!("scene", "name" => "local_wireless");
     ONLINE_MELEE_MODE.store(false, Ordering::SeqCst);
     LOCAL_ONLINE_CSS_NUM_PANES_ADJUSTED = false;
     let handle = *((*((ctx.registers[0].x() + 8) as *const u64) + 0x10) as *const u64);
@@ -146,6 +152,11 @@ unsafe fn update_css(arg: u64) {
 
 fn update_match_status(status: MatchStatus, force_update: bool) {
     if MATCH_STATE.set(status, force_update) {
+        crate::logging::event!("match_status",
+            "status" => format!("{status:?}").as_str(),
+            "forced" => force_update,
+            "mode" => online_mode_name(),
+        );
         println!("UPDATE MATCH STATUS: {:?}", status);
         crate::logging::info!("UPDATE MATCH STATUS: {:?}", status);
         if status != MatchStatus::Inactive {
@@ -232,14 +243,19 @@ unsafe fn on_stage_presetup(ctx: &InlineCtx) {
 
     let training = is_training_mode();
     let fighter_count = if training || matches!(stage_id, 310 | 354 | 311) {
-        0
+        None
     } else {
-        get_fighter_entry_count()
+        Some(get_fighter_entry_count())
     };
-    let status = MatchStatus::from_stage(stage_id, training, fighter_count);
+    let status = MatchStatus::from_stage(stage_id, training, fighter_count.unwrap_or(0));
+    crate::logging::event!("stage",
+        "stage_id" => stage_id,
+        "training" => training,
+        "fighter_count" => fighter_count,
+    );
     update_match_status(status, status != MatchStatus::Inactive);
     crate::logging::info!(
-        "STAGE PRESETUP: stage={} training={} fighters={} status={:?}",
+        "STAGE PRESETUP: stage={} training={} fighters={:?} status={:?}",
         stage_id,
         training,
         fighter_count,

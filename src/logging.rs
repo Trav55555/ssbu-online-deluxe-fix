@@ -12,7 +12,31 @@ use std::{
 
 use log::{LevelFilter, Metadata, Record, SetLoggerError};
 
+pub use crate::runtime_event as event;
 pub use log::{error, info};
+
+#[cfg(feature = "runtime_trace")]
+pub mod events;
+
+#[cfg(feature = "runtime_trace")]
+pub fn emit_event(name: &str, fields: &[(&str, events::Value<'_>)]) {
+    use std::sync::atomic::{AtomicU64, Ordering};
+    static SEQUENCE: AtomicU64 = AtomicU64::new(0);
+    let sequence = SEQUENCE.fetch_add(1, Ordering::Relaxed);
+    log::info!(target: "no-mod-path", "DELUXE_EVENT {}", events::format_event(sequence, name, fields));
+}
+
+#[macro_export]
+macro_rules! runtime_event {
+    ($name:expr $(, $key:literal => $value:expr)* $(,)?) => {
+        #[cfg(feature = "runtime_trace")]
+        {
+            $crate::logging::emit_event($name, &[
+                $(($key, $crate::logging::events::Value::from($value))),*
+            ]);
+        }
+    };
+}
 
 static LOG_PATH: &str = "sd:/ultimate/ssbu_online_deluxe/logs";
 static FILE_LOG_BUFFER: usize = 0x2000; // Room for 0x2000 characters, might have performance issues if the logger level is "Info" or "Trace"
